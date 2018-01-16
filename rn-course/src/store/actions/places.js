@@ -1,22 +1,102 @@
 import * as types from './types';
+import { uiStartLoading, uiStopLoading } from './index';
 
-export const addPlace = placeName => {
-  return {
-    type: types.ADD_PLACE,
-    payload: {
-      key: Math.random(),
-      name: placeName,
-      image: {
-        uri:
-          'https://cdn.theculturetrip.com/wp-content/uploads/2014/12/thai1.jpg'
+export const addPlace = (placeName, image) => {
+  return dispatch => {
+    dispatch(uiStartLoading());
+    fetch(
+      'https://us-central1-awesome-places-1515802527407.cloudfunctions.net/storeImage',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          image: image.base64
+        })
       }
-    }
+    )
+      .catch(err => {
+        console.log(err);
+        alert('Something went wrong, please try again');
+        dispatch(uiStopLoading());
+      })
+      .then(res => res.json())
+      .then(parsedRes => {
+        const placeData = {
+          name: placeName,
+          image: parsedRes.imageUrl
+        };
+        return fetch(
+          'https://awesome-places-1515802527407.firebaseio.com/places.json',
+          {
+            method: 'POST',
+            body: JSON.stringify(placeData)
+          }
+        );
+      })
+      .catch(err => {
+        console.log(err);
+        alert('Something went wrong, please try again');
+        dispatch(uiStopLoading());
+      })
+      .then(res => res.json())
+      .then(parsedRes => {
+        console.log(parsedRes);
+        dispatch(uiStopLoading());
+      });
+  };
+};
+
+export const getPlaces = () => {
+  return dispatch => {
+    fetch('https://awesome-places-1515802527407.firebaseio.com/places.json')
+      .catch(err => {
+        console.log(err);
+        alert('Something went wrong, sorry!');
+      })
+      .then(res => res.json())
+      .then(parsedRes => {
+        const places = [];
+        for (let key in parsedRes) {
+          places.push({
+            ...parsedRes[key],
+            image: {
+              uri: parsedRes[key].image
+            },
+            key: key
+          });
+        }
+        dispatch({
+          type: types.SET_PLACES,
+          payload: places
+        });
+      });
   };
 };
 
 export const deletePlace = key => {
+  return dispatch => {
+    dispatch(removePlace(key));
+    fetch(
+      'https://awesome-places-1515802527407.firebaseio.com/places/' +
+        key +
+        '.json',
+      {
+        method: 'DELETE'
+      }
+    )
+      .catch(err => {
+        alert('Something went wrong, sorry :/');
+        console.log(err);
+      })
+      .then(res => res.json())
+      .then(parsedRes => {
+        console.log('Done!');
+      });
+  };
+};
+
+export const removePlace = key => {
   return {
-    type: types.DELETE_PLACE,
+    type: types.REMOVE_PLACE,
     payload: key
   };
 };

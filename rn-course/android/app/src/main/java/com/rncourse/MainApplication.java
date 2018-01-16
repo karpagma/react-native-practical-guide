@@ -14,6 +14,7 @@ import java.util.List;
 import com.oblador.vectoricons.VectorIconsPackage;
 import com.reactnativenavigation.NavigationApplication;
 import com.airbnb.android.react.maps.MapsPackage;
+import com.imagepicker.ImagePickerPackage;
 
 public class MainApplication extends NavigationApplication {
 
@@ -26,7 +27,11 @@ public class MainApplication extends NavigationApplication {
   protected List<ReactPackage> getPackages() {
     // Add additional packages you require here
     // No need to add RnnPackage and MainReactPackage
-    return Arrays.<ReactPackage>asList(new VectorIconsPackage(), new MapsPackage());
+    return Arrays.<ReactPackage>asList(
+        new VectorIconsPackage(), 
+        new MapsPackage(),
+        new ImagePickerPackage()
+    );
   }
 
   @Override

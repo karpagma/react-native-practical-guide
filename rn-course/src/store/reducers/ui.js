@@ -1,21 +1,21 @@
 import * as types from '../actions/types';
 
 const initialState = {
-  places: []
+  isLoading: false
 };
 
 const reducer = (state = initialState, action) => {
   switch (action.type) {
-    case types.SET_PLACES:
+    case types.UI_START_LOADING:
       return {
         ...state,
-        places: action.payload
+        isLoading: true
       };
 
-    case types.REMOVE_PLACE:
+    case types.UI_STOP_LOADING:
       return {
         ...state,
-        places: state.places.filter(p => p.key !== action.payload)
+        isLoading: false
       };
 
     default:

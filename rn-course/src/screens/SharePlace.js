@@ -6,7 +6,8 @@ import {
   Button,
   StyleSheet,
   ScrollView,
-  Image
+  Image,
+  ActivityIndicator
 } from 'react-native';
 import { connect } from 'react-redux';
 
@@ -22,7 +23,11 @@ class SharePlaceScreen extends Component {
   };
 
   state = {
-    placeName: ''
+    placeName: '',
+    image: {
+      value: null,
+      valid: false
+    }
   };
 
   constructor(props) {
@@ -48,55 +53,62 @@ class SharePlaceScreen extends Component {
     });
   };
 
+  imagePickedHandler = image => {
+    this.setState({
+      image: {
+        value: image,
+        valid: true
+      }
+    });
+  };
+
   placeAddedHandler = () => {
-    this.props.addPlace(this.state.placeName);
+    this.props.addPlace(this.state.placeName, this.state.image.value);
   };
 
   render() {
+    let submitButton = (
+      <Button title="Share a Place!" onPress={this.placeAddedHandler} />
+    );
+
+    if (this.props.isLoading) {
+      submitButton = <ActivityIndicator />;
+    }
+
     return (
       <ScrollView>
         <View style={styles.container}>
           <Heading>Share a place with us</Heading>
-          <PickImage />
-          <PickLocation />
           <PlaceInput
             placeName={this.state.placeName}
             onPlaceNameChanged={this.placeNamChangedHandler}
           />
-          <View>
-            <Button title="Share a Place!" onPress={this.placeAddedHandler} />
-          </View>
+          <PickImage onImagePicked={this.imagePickedHandler} />
+          <View>{submitButton}</View>
         </View>
       </ScrollView>
     );
   }
 }
 
-const mapDispatchToProps = dispatch => {
-  return {
-    addPlace: placeName => dispatch(placeActions.addPlace(placeName))
-  };
-};
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center'
-  },
-  placeholder: {
-    borderWidth: 1,
-    borderColor: 'black',
-    backgroundColor: '#eee',
-    width: '80%',
-    height: 150
-  },
-  button: {
-    margin: 8
-  },
-  previewImage: {
-    width: '100%',
-    height: '100%'
   }
 });
 
-export default connect(null, mapDispatchToProps)(SharePlaceScreen);
+const mapStateToProps = state => {
+  return {
+    isLoading: state.ui.isLoading
+  };
+};
+
+const mapDispatchToProps = dispatch => {
+  return {
+    addPlace: (placeName, image) =>
+      dispatch(placeActions.addPlace(placeName, image))
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(SharePlaceScreen);
